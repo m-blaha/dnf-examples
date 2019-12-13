@@ -58,12 +58,15 @@ class TestModules():
 
     def compare_filtering(self):
         '''compares modular filtering base on names and provides and names only'''
+        modules_count = packages_count = 0
         for module in self.modules:
             names, names_q, provides_q = self.filter_name_provide(module)
             dif = provides_q.difference(names_q).run()
             if dif:
+                modules_count += 1
                 print("Module: {}".format(module.getFullIdentifier()))
                 for pkg in dif:
+                    packages_count += 1
                     print("  {}".format(pkg))
                     provides = set([
                         provide
@@ -75,8 +78,10 @@ class TestModules():
                             [obsolete
                              for o_name, obsolete in self.reldep_iter(pkg.obsoletes)]))
                 print()
+        print("Number of modules affected:", modules_count)
+        print("Number of packages affected:", packages_count)
 
 
 if __name__ == '__main__':
-    tm = TestModules(releasever='30')
+    tm = TestModules(releasever='31')
     tm.compare_filtering()
