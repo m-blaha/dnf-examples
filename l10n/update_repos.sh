@@ -2,8 +2,13 @@
 set -ex
 
 BASE_PATH="git@github.com:rpm-software-management"
-REPOS=('dnf')
-BRANCH="master"
+REPOS=(
+    'dnf:master'
+    'libdnf:master'
+    'libdnf:dnf-4-master'
+    'dnf-plugins-core:master'
+    'dnf-plugins-extras:master'
+)
 
 GIT_COMMITER_NAME="DNF github localization bot"
 GIT_COMMITER_EMAIL="mblaha+l10n@redhat.com"
@@ -23,21 +28,24 @@ popd () {
     command popd "$@" > /dev/null
 }
 
-for repo in ${REPOS[@]}; do
-    L10N_REPO="${repo}-l10n"
-    POT_FILE="${repo}.pot"
-    TMP_DIR=$(mktemp -d --tmpdir= "tmp.${L10N_REPO}.XXXXXXXX")
+for repobranch in ${REPOS[@]}; do
+    old_IFS=$IFS
+    IFS=: read -a repo <<< "$repobranch"
+    IFS=${old_IFS}
+    L10N_REPO="${repo[0]}-l10n"
+    POT_FILE="${repo[0]}.pot"
+    TMP_DIR=$(mktemp -d --tmpdir= "l10n-tmp.${L10N_REPO}.XXXXXXXX")
     if [[ ! -e "$TMP_DIR" ]]; then
         error "Error creating temp directory for repo ${L10N_REPO}."
     fi
-    git clone --depth=1 -b ${BRANCH} ${BASE_PATH}/${L10N_REPO}.git ${TMP_DIR}
+    git clone --depth=1 -b ${repo[1]} ${BASE_PATH}/${L10N_REPO}.git ${TMP_DIR}
     pushd ${TMP_DIR}
         ./script/update_source_pot.sh
         git config user.email "${GIT_COMMITER_EMAIL}"
         git config user.name "${GIT_COMMITER_NAME}"
         git add ${POT_FILE}
         git commit -m 'Update source file'
-        git push origin ${BRANCH}
+        #git push origin ${repo[1]}
     popd
     rm -rf $TMP_DIR
 done;
