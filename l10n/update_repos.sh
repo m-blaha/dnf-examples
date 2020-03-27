@@ -38,14 +38,14 @@ for repobranch in ${REPOS[@]}; do
     if [[ ! -e "$TMP_DIR" ]]; then
         error "Error creating temp directory for repo ${L10N_REPO}."
     fi
-    git clone --depth=1 -b ${repo[1]} ${BASE_PATH}/${L10N_REPO}.git ${TMP_DIR}
+    git clone --depth=1 -b master ${BASE_PATH}/${L10N_REPO}.git ${TMP_DIR}
     pushd ${TMP_DIR}
-        ./script/update_source_pot.sh
+        ./script/update_source_pot.sh ${repo[1]}
         git config user.email "${GIT_COMMITER_EMAIL}"
         git config user.name "${GIT_COMMITER_NAME}"
         git add ${POT_FILE}
         git commit -m 'Update source file'
-        #git push origin ${repo[1]}
+        git push origin master
     popd
     rm -rf $TMP_DIR
 done;
